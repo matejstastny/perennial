@@ -19,9 +19,9 @@ public:
 
 	void _ready() override;
 
-	void                  load_world(const Array &data);
-	void                  set_tile_cell(Vector2i coords, TileRegistry::TileType tile_type);
-	TileRegistry::TileType get_tile_at(Vector2 world_pos) const;
+	void load_world(const Array &data);
+	void set_tile_cell(Vector2i coords, int tile_type);
+	int  get_tile_at(Vector2 world_pos) const;
 	bool                  is_walkable_at(Vector2 world_pos) const;
 	float                 get_speed_mod_at(Vector2 world_pos) const;
 	Vector2i              world_to_tile_coords(Vector2 world_pos) const;

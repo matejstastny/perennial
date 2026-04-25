@@ -1,7 +1,6 @@
 #pragma once
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/core/type_info.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/string.hpp>
 
@@ -11,6 +10,7 @@ class TileRegistry : public Object {
 	GDCLASS(TileRegistry, Object)
 
 public:
+	// Exposed as integer constants to GDScript (TileRegistry.GRASS etc.)
 	enum TileType {
 		GRASS  = 0,
 		DIRT   = 1,
@@ -21,15 +21,15 @@ public:
 		TILE_TYPE_MAX,
 	};
 
-	static bool   is_walkable(TileType tile_type);
-	static float  get_speed_mod(TileType tile_type);
-	static Color  get_color(TileType tile_type);
-	static String get_tile_name(TileType tile_type);
+	// Bound methods take int so the variant system doesn't need VARIANT_ENUM_CAST.
+	// Callers in C++ still pass TileType values; they convert implicitly.
+	static bool   is_walkable(int tile_type);
+	static float  get_speed_mod(int tile_type);
+	static Color  get_color(int tile_type);
+	static String get_tile_name(int tile_type);
 
 protected:
 	static void _bind_methods();
 };
 
 } // namespace godot
-
-VARIANT_ENUM_CAST(godot::TileRegistry::TileType)

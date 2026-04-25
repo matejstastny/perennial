@@ -50,8 +50,7 @@ Vector2 GameWorld::_find_spawn() const {
 					continue;
 				}
 				Array row = _world_data[ty];
-				TileRegistry::TileType type = (TileRegistry::TileType)(int)row[tx];
-				if (TileRegistry::is_walkable(type)) {
+				if (TileRegistry::is_walkable((int)row[tx])) {
 					return _tile_map->tile_to_world_center(Vector2i(tx, ty));
 				}
 			}

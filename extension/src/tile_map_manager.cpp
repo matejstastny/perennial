@@ -19,23 +19,23 @@ void TileMapManager::load_world(const Array &data) {
 	for (int y = 0; y < data.size(); y++) {
 		Array row = data[y];
 		for (int x = 0; x < row.size(); x++) {
-			set_tile_cell(Vector2i(x, y), (TileRegistry::TileType)(int)row[x]);
+			set_tile_cell(Vector2i(x, y), (int)row[x]);
 		}
 	}
 }
 
-void TileMapManager::set_tile_cell(Vector2i coords, TileRegistry::TileType tile_type) {
-	set_cell(0, coords, (int)tile_type, Vector2i(0, 0));
+void TileMapManager::set_tile_cell(Vector2i coords, int tile_type) {
+	set_cell(0, coords, tile_type, Vector2i(0, 0));
 }
 
-TileRegistry::TileType TileMapManager::get_tile_at(Vector2 world_pos) const {
+int TileMapManager::get_tile_at(Vector2 world_pos) const {
 	Vector2i coords = local_to_map(to_local(world_pos));
 	int y = coords.y;
 	int x = coords.x;
 	if (y >= 0 && y < _tile_grid.size()) {
 		Array row = _tile_grid[y];
 		if (x >= 0 && x < row.size()) {
-			return (TileRegistry::TileType)(int)row[x];
+			return (int)row[x];
 		}
 	}
 	return TileRegistry::GRASS;
@@ -64,9 +64,8 @@ Ref<TileSet> TileMapManager::_build_tileset() {
 	tileset->add_physics_layer();
 
 	for (int i = 0; i < TileRegistry::TILE_TYPE_MAX; i++) {
-		TileRegistry::TileType type = (TileRegistry::TileType)i;
-		Color color = TileRegistry::get_color(type);
-		bool solid = !TileRegistry::is_walkable(type);
+		Color color = TileRegistry::get_color(i);
+		bool solid = !TileRegistry::is_walkable(i);
 		Ref<TileSetAtlasSource> source = _make_source(color, TILE_SIZE, solid);
 		tileset->add_source(source, i);
 	}
