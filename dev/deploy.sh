@@ -12,14 +12,14 @@ sed -i '' 's/use_external_editor = true/use_external_editor = false/' "$EDITOR_S
 trap 'sed -i "" "s/use_external_editor = false/use_external_editor = true/" "$EDITOR_SETTINGS"' EXIT
 
 echo "Exporting project..."
-"$GODOT" --headless --path "$PROJECT_DIR" --export-release "Web App" "$DIST_DIR/perennial.html"
+"$GODOT" --headless --path "$PROJECT_DIR" --export-release "Web App" "$DIST_DIR/index.html"
 
 # Restore immediately after export (trap also covers crash/abort)
 sed -i '' 's/use_external_editor = false/use_external_editor = true/' "$EDITOR_SETTINGS"
 trap - EXIT
 
-echo "Serving at http://localhost:$PORT/perennial.html"
-open "http://localhost:$PORT/perennial.html"
+echo "Serving at http://localhost:$PORT"
+open "http://localhost:$PORT"
 
 python3 - <<EOF
 import http.server, os
