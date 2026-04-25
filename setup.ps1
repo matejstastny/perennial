@@ -7,15 +7,15 @@ param([switch]$Release)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$Target    = if ($Release) { "template_release" } else { "template_debug" }
-$RepoRoot  = $PSScriptRoot
-$ExtDir    = Join-Path $RepoRoot "extension"
+$Target   = if ($Release) { "template_release" } else { "template_debug" }
+$RepoRoot = $PSScriptRoot
+$ExtDir   = Join-Path $RepoRoot "extension"
 
-function Step($msg) { Write-Host ""; Write-Host "▶ $msg" -ForegroundColor Cyan }
-function Ok($msg)   { Write-Host "  ✓ $msg" -ForegroundColor Green }
-function Die($msg)  { Write-Host ""; Write-Host "✗ $msg" -ForegroundColor Red; exit 1 }
+function Step($msg) { Write-Host ""; Write-Host ">> $msg" -ForegroundColor Cyan }
+function Ok($msg)   { Write-Host "  [OK] $msg" -ForegroundColor Green }
+function Die($msg)  { Write-Host ""; Write-Host "[ERROR] $msg" -ForegroundColor Red; exit 1 }
 
-# ── Python / SCons ────────────────────────────────────────────────────────────
+# -- Python / SCons -----------------------------------------------------------
 
 Step "Checking Python"
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
@@ -25,14 +25,13 @@ Ok "Python $((python --version 2>&1) -replace 'Python ','')"
 
 Step "Checking SCons"
 if (-not (Get-Command scons -ErrorAction SilentlyContinue)) {
-    Write-Host "  → Installing SCons..."
+    Write-Host "  -> Installing SCons..."
     python -m pip install scons
-    # Reload PATH so scons is found immediately
     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","User") + ";" + $env:PATH
 }
 Ok "scons"
 
-# ── Visual Studio (MSVC) ──────────────────────────────────────────────────────
+# -- Visual Studio (MSVC) -----------------------------------------------------
 
 Step "Checking Visual Studio"
 $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -48,24 +47,24 @@ if (-not (Test-Path $vsWhere)) {
 $vsPath = & $vsWhere -latest -property installationPath
 Ok "Visual Studio at $vsPath"
 
-# ── godot-cpp submodule ───────────────────────────────────────────────────────
+# -- godot-cpp submodule ------------------------------------------------------
 
-Step "godot-cpp submodule"
+Step "godot-cpp submodule  (branch: 4.2)"
 
 $gitModules = Join-Path $RepoRoot ".gitmodules"
 $alreadyRegistered = (Test-Path $gitModules) -and (Select-String -Path $gitModules -Pattern "godot-cpp" -Quiet)
 
 if (-not $alreadyRegistered) {
-    Write-Host "  → Registering submodule..."
+    Write-Host "  -> Registering submodule..."
     git -C $RepoRoot submodule add -b 4.2 `
         https://github.com/godotengine/godot-cpp extension/godot-cpp
 }
 
-Write-Host "  → Fetching / updating..."
+Write-Host "  -> Fetching / updating..."
 git -C $RepoRoot submodule update --init --recursive
 Ok "godot-cpp ready"
 
-# ── VS Code include paths ─────────────────────────────────────────────────────
+# -- VS Code IntelliSense config ----------------------------------------------
 
 Step "VS Code IntelliSense config"
 
@@ -94,22 +93,19 @@ $propsPath = Join-Path $vscodeDir "c_cpp_properties.json"
 "@ | Set-Content -Path $propsPath -Encoding UTF8
 Ok ".vscode/c_cpp_properties.json written"
 
-# ── generate bindings (creates gen/include — needed for VS Code) ──────────────
+# -- Generate bindings (creates gen/include -- needed for VS Code) ------------
 
-Step "Generating C++ bindings  (this is what creates the .hpp files VS Code needs)"
+Step "Generating C++ bindings"
 
 $devShell = Join-Path $vsPath "Common7\Tools\VsDevCmd.bat"
 Set-Location $ExtDir
 
-# Binding generation is Python-only — no C++ compilation, just reads
-# extension_api.json and writes gen/include headers. Run inside VS dev shell
-# so the scons environment is consistent with the full build that follows.
 $genCmd = "scons platform=windows target=$Target generate_bindings=yes --directory=`"$ExtDir\godot-cpp`""
 cmd /c "`"$devShell`" && $genCmd"
 if ($LASTEXITCODE -ne 0) { Die "Binding generation failed." }
 Ok "gen/include headers written"
 
-# ── full build ────────────────────────────────────────────────────────────────
+# -- Full build ---------------------------------------------------------------
 
 Step "Compiling extension  (platform=windows  target=$Target)"
 
@@ -117,23 +113,22 @@ $buildCmd = "scons platform=windows target=$Target"
 cmd /c "`"$devShell`" && $buildCmd"
 if ($LASTEXITCODE -ne 0) { Die "Compilation failed." }
 
-# ── reload VS Code ────────────────────────────────────────────────────────────
+# -- Reload VS Code -----------------------------------------------------------
 
 Step "Reloading VS Code IntelliSense"
 if (Get-Command code -ErrorAction SilentlyContinue) {
-    # --command sends a workbench command to the running VS Code instance
     code --command workbench.action.reloadWindow 2>$null
     if ($LASTEXITCODE -eq 0) {
         Ok "VS Code window reloaded"
     } else {
-        Write-Host "  ↳ Press Ctrl+Shift+P → 'Reload Window' in VS Code" -ForegroundColor Yellow
+        Write-Host "  -> Press Ctrl+Shift+P -> 'Reload Window' in VS Code" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ↳ 'code' not in PATH — press Ctrl+Shift+P → 'Reload Window' in VS Code" -ForegroundColor Yellow
+    Write-Host "  -> 'code' not in PATH -- press Ctrl+Shift+P -> 'Reload Window' in VS Code" -ForegroundColor Yellow
 }
 
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host "  ✓ Built → bin\libperennial.windows.$Target.x86_64.dll"
-Write-Host "  Open Godot 4.2 — GameWorld is ready to use."
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+Write-Host "------------------------------------------------------------" -ForegroundColor Green
+Write-Host "  [OK] Built -> bin\libperennial.windows.$Target.x86_64.dll"
+Write-Host "  Open Godot 4.2 -- GameWorld is ready to use."
+Write-Host "------------------------------------------------------------" -ForegroundColor Green
