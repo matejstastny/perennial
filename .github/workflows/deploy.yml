@@ -35,7 +35,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.export.outputs.build_directory }}
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         id: deploy
