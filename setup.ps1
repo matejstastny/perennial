@@ -117,9 +117,23 @@ $buildCmd = "scons platform=windows target=$Target"
 cmd /c "`"$devShell`" && $buildCmd"
 if ($LASTEXITCODE -ne 0) { Die "Compilation failed." }
 
+# ── reload VS Code ────────────────────────────────────────────────────────────
+
+Step "Reloading VS Code IntelliSense"
+if (Get-Command code -ErrorAction SilentlyContinue) {
+    # --command sends a workbench command to the running VS Code instance
+    code --command workbench.action.reloadWindow 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        Ok "VS Code window reloaded"
+    } else {
+        Write-Host "  ↳ Press Ctrl+Shift+P → 'Reload Window' in VS Code" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ↳ 'code' not in PATH — press Ctrl+Shift+P → 'Reload Window' in VS Code" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
 Write-Host "  ✓ Built → bin\libperennial.windows.$Target.x86_64.dll"
-Write-Host "  Reload VS Code window (Ctrl+Shift+P → 'Reload Window')."
-Write-Host "  Then open Godot 4.2 — GameWorld is ready to use."
+Write-Host "  Open Godot 4.2 — GameWorld is ready to use."
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
