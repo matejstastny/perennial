@@ -1,9 +1,9 @@
-[gd_scene format=3 uid="uid://dhituakdk4l2g"]
+[gd_scene format=3 uid="uid://cdu46xkavym6s"]
 
-[ext_resource type="Texture2D" uid="uid://cev10ybq1k8o5" path="res://assets/sprout_lands/tilesets/Grass.png" id="1_v3uhd"]
+[ext_resource type="Texture2D" uid="uid://cev10ybq1k8o5" path="res://assets/sprout_lands/tilesets/Grass.png" id="1_tknnm"]
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ufxs0"]
-texture = ExtResource("1_v3uhd")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_egd8m"]
+texture = ExtResource("1_tknnm")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -76,13 +76,9 @@ texture = ExtResource("1_v3uhd")
 7:6/0 = 0
 8:6/0 = 0
 
-[sub_resource type="TileSet" id="TileSet_6we3w"]
-sources/0 = SubResource("TileSetAtlasSource_ufxs0")
+[sub_resource type="TileSet" id="TileSet_31ka2"]
+sources/0 = SubResource("TileSetAtlasSource_egd8m")
 
-[node name="Main Map" type="Node2D" unique_id=1809247345]
-
-[node name="GrassTileMap" type="TileMapLayer" parent="." unique_id=1563854235]
-tile_map_data = PackedByteArray(0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0)
-tile_set = SubResource("TileSet_6we3w")
-
-[node name="Wa" type="TileMapLayer" parent="." unique_id=1245353367]
+[node name="TileMap" type="TileMap" unique_id=1839521812]
+tile_set = SubResource("TileSet_31ka2")
+format = 2

@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dhituakdk4l2g"]
+[gd_scene format=3 uid="uid://1dup4b2brute"]
 
 [ext_resource type="Texture2D" uid="uid://cev10ybq1k8o5" path="res://assets/sprout_lands/tilesets/Grass.png" id="1_v3uhd"]
 
@@ -81,8 +81,8 @@ sources/0 = SubResource("TileSetAtlasSource_ufxs0")
 
 [node name="Main Map" type="Node2D" unique_id=1809247345]
 
+[node name="WaterTileMap" type="TileMapLayer" parent="." unique_id=1245353367]
+
 [node name="GrassTileMap" type="TileMapLayer" parent="." unique_id=1563854235]
 tile_map_data = PackedByteArray(0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0)
 tile_set = SubResource("TileSet_6we3w")
-
-[node name="Wa" type="TileMapLayer" parent="." unique_id=1245353367]
