@@ -40,13 +40,23 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 Ok "Python $((python --version 2>&1) -replace 'Python ','')"
 
 Step "Checking SCons"
-if (-not (python -m scons --version 2>$null)) {
+# Resolve scons by asking Python where it puts scripts -- avoids PATH issues
+# with packages installed mid-session (pip drops executables into Scripts\ but
+# that folder isn't on PATH until a new shell starts).
+$PyScripts = python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+$SconsExe  = Join-Path $PyScripts "scons.exe"
+
+if (-not (Test-Path $SconsExe)) {
     Write-Host "  -> Installing SCons..."
-    python -m pip install scons
+    python -m pip install --quiet scons
 }
-# Use 'python -m scons' throughout to avoid PATH issues with newly installed packages
-$SconsCmd = "python -m scons"
-Ok "scons (via python -m scons)"
+
+if (-not (Test-Path $SconsExe)) {
+    Die "scons.exe not found at $SconsExe after install. Check your Python installation."
+}
+
+$SconsCmd = "`"$SconsExe`""
+Ok "scons at $SconsExe"
 
 # -- Compiler detection & auto-install ----------------------------------------
 # Priority:
