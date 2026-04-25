@@ -8,7 +8,6 @@ dist/
 bin/
 
 ### GDExtension — SCons build system ###
-extension/godot-cpp/
 extension/.sconsign.dblite
 extension/.sconf_temp/
 extension/gen/
