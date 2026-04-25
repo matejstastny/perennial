@@ -225,27 +225,44 @@ $propsPath = Join-Path $vscodeDir "c_cpp_properties.json"
 "@ | Set-Content -Path $propsPath -Encoding UTF8
 Ok ".vscode/c_cpp_properties.json written"
 
-# -- Helper: run scons --------------------------------------------------------
+# -- MSVC environment setup ---------------------------------------------------
+# Import MSVC env vars into the current PowerShell session so we can call
+# cl.exe / link.exe directly without wrapping every command in cmd /c.
+# This also means scons output goes straight to the terminal instead of being
+# swallowed by cmd /c.
 
-function Invoke-Scons($sconsArgs) {
-    # cmd /c handles quoted executable paths reliably in both branches.
-    # Invoke-Expression is avoided -- it chokes on paths that contain spaces.
-    if ($UseMingw) {
-        cmd /c "`"$SconsCmd`" $sconsArgs use_mingw=yes"
-    } else {
-        cmd /c "`"$DevShell`" && `"$SconsCmd`" $sconsArgs"
+if (-not $UseMingw) {
+    Step "Setting up MSVC environment"
+    $tmp = [System.IO.Path]::GetTempFileName()
+    # Run VsDevCmd.bat and capture the resulting env vars via 'set'
+    cmd /c "`"$DevShell`" -no_logo && set" 2>$null | Set-Content $tmp -Encoding ASCII
+    foreach ($line in Get-Content $tmp) {
+        if ($line -match '^([^=]+)=(.*)$') {
+            [System.Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+        }
     }
-    if ($LASTEXITCODE -ne 0) { Die "scons failed: $sconsArgs" }
+    Remove-Item $tmp -ErrorAction SilentlyContinue
+    Ok "MSVC environment imported into session"
 }
 
 # -- Build --------------------------------------------------------------------
 # One scons call from extension/ does everything:
 #   1. Runs godot-cpp/SConstruct  -> generates gen/include headers + builds godot-cpp lib
 #   2. Compiles our src/*.cpp     -> links into the final .dll
+#
+# '&' operator calls the exe directly -- output goes to the terminal, no
+# quoting issues, and $LASTEXITCODE is set correctly.
 
 Step "Building extension  (platform=windows  target=$Target)"
 Set-Location $ExtDir
-Invoke-Scons "platform=windows target=$Target"
+
+$jobs = [System.Environment]::ProcessorCount
+if ($UseMingw) {
+    & $SconsExe platform=windows target=$Target use_mingw=yes -j$jobs
+} else {
+    & $SconsExe platform=windows target=$Target -j$jobs
+}
+if ($LASTEXITCODE -ne 0) { Die "Build failed -- see scons output above." }
 Ok "Built -> bin\libperennial.windows.$Target.x86_64.dll"
 
 # -- Reload VS Code -----------------------------------------------------------
