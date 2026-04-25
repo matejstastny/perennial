@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://dvuydpog8v88k"]
 
-[node name="GameWorld" type="GameWorld"]
+[ext_resource type="Script" uid="uid://deaw4ujwa2aut" path="res://scenes/test.gd" id="1_uwrxv"]
+
+[node name="GameWorld" type="GameWorld" unique_id=1960484639]
 world_width = 80
 world_height = 60
 world_seed = 42
 camera_zoom = 2.5
+
+[node name="Node" type="Node" parent="." unique_id=1003568898]
+script = ExtResource("1_uwrxv")

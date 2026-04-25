@@ -2,6 +2,7 @@
   "recommendations": [
     "alfish.godot-files",
     "geequlim.godot-tools",
-    "ms-vscode.cpptools"
+    "ms-vscode.cpptools",
+    "ms-dotnettools.csdevkit"
   ]
 }
