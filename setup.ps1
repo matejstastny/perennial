@@ -257,11 +257,17 @@ Step "Building extension  (platform=windows  target=$Target)"
 Set-Location $ExtDir
 
 $jobs = [System.Environment]::ProcessorCount
-if ($UseMingw) {
-    & $SconsExe platform=windows target=$Target use_mingw=yes -j$jobs
-} else {
-    & $SconsExe platform=windows target=$Target -j$jobs
-}
+
+# Build argument list explicitly -- avoids PowerShell variable-expansion
+# quirks when a variable is glued to a flag like -j$jobs
+$sconsArgs = @(
+    "platform=windows",
+    "target=$Target",
+    "-j", "$jobs"
+)
+if ($UseMingw) { $sconsArgs += "use_mingw=yes" }
+
+& $SconsExe @sconsArgs
 if ($LASTEXITCODE -ne 0) { Die "Build failed -- see scons output above." }
 Ok "Built -> bin\libperennial.windows.$Target.x86_64.dll"
 
