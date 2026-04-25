@@ -24,12 +24,16 @@ def find_godot():
         for base in candidates:
             if not base:
                 continue
-            # Match Godot_v.../Godot_v....exe
-            for exe in base.glob("Godot_v*/*.exe"):
-                return exe
-            # Match a flat Godot*.exe directly in base
-            for exe in base.glob("Godot*.exe"):
-                return exe
+            all_exes = list(base.glob("Godot_v*/*.exe")) + list(base.glob("Godot*.exe"))
+            # Prefer non-mono builds — mono cannot export to web
+            non_mono = [e for e in all_exes if "mono" not in e.name.lower()]
+            if non_mono:
+                return non_mono[0]
+            if all_exes:
+                raise FileNotFoundError(
+                    f"Only Mono/C# Godot builds found ({all_exes[0].name}), "
+                    "which cannot export to web. Install the standard (non-Mono) Godot build."
+                )
         raise FileNotFoundError(
             "Godot not found. Add it to PATH or set GODOT env variable."
         )
