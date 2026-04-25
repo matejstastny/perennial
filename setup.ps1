@@ -55,7 +55,7 @@ if (-not (Test-Path $SconsExe)) {
     Die "scons.exe not found at $SconsExe after install. Check your Python installation."
 }
 
-$SconsCmd = "`"$SconsExe`""
+$SconsCmd = $SconsExe   # plain path, no extra quotes -- cmd /c handles quoting
 Ok "scons at $SconsExe"
 
 # -- Compiler detection & auto-install ----------------------------------------
@@ -228,11 +228,12 @@ Ok ".vscode/c_cpp_properties.json written"
 # -- Helper: run scons --------------------------------------------------------
 
 function Invoke-Scons($sconsArgs) {
+    # cmd /c handles quoted executable paths reliably in both branches.
+    # Invoke-Expression is avoided -- it chokes on paths that contain spaces.
     if ($UseMingw) {
-        # python -m scons avoids relying on scons being on PATH
-        Invoke-Expression "$SconsCmd $sconsArgs use_mingw=yes"
+        cmd /c "`"$SconsCmd`" $sconsArgs use_mingw=yes"
     } else {
-        cmd /c "`"$DevShell`" && $SconsCmd $sconsArgs"
+        cmd /c "`"$DevShell`" && `"$SconsCmd`" $sconsArgs"
     }
     if ($LASTEXITCODE -ne 0) { Die "scons failed: $sconsArgs" }
 }
