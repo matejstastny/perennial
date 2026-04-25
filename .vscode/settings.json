@@ -1,6 +1,7 @@
 {
   "files.exclude": {
     "**/*.import": true,
+    "**/*.gd.uid": true,
     ".godot": true
   }
 }

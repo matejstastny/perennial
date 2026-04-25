@@ -7,46 +7,22 @@ import sys
 import webbrowser
 from pathlib import Path
 
+if platform.system() == "Windows":
+    print("Error: deploy.py is not supported on Windows.", file=sys.stderr)
+    sys.exit(1)
+
 PORT = 8060
 PROJECT_DIR = Path(__file__).parent.parent.resolve()
 DIST_DIR = PROJECT_DIR / "dist"
 
 def find_godot():
-    system = platform.system()
-    if system == "Darwin":
+    if platform.system() == "Darwin":
         return Path("/Applications/Godot.app/Contents/MacOS/Godot")
-    if system == "Windows":
-        candidates = [
-            Path(os.environ.get("PROGRAMFILES", "C:/Program Files")),
-            Path(os.environ.get("PROGRAMFILES(X86)", "C:/Program Files (x86)")),
-            Path(os.environ.get("LOCALAPPDATA", "")),
-        ]
-        for base in candidates:
-            if not base:
-                continue
-            all_exes = list(base.glob("Godot_v*/*.exe")) + list(base.glob("Godot*.exe"))
-            # Prefer non-mono builds — mono cannot export to web
-            non_mono = [e for e in all_exes if "mono" not in e.name.lower()]
-            if non_mono:
-                return non_mono[0]
-            if all_exes:
-                raise FileNotFoundError(
-                    f"Only Mono/C# Godot builds found ({all_exes[0].name}), "
-                    "which cannot export to web. Install the standard (non-Mono) Godot build."
-                )
-        raise FileNotFoundError(
-            "Godot not found. Add it to PATH or set GODOT env variable."
-        )
-    # Linux fallback
     return Path("godot")
 
 def find_editor_settings():
-    system = platform.system()
-    if system == "Darwin":
+    if platform.system() == "Darwin":
         return Path.home() / "Library/Application Support/Godot/editor_settings-4.tres"
-    if system == "Windows":
-        appdata = os.environ.get("APPDATA", "")
-        return Path(appdata) / "Godot/editor_settings-4.tres"
     return Path.home() / ".config/godot/editor_settings-4.tres"
 
 def patch_editor_settings(path: Path, src: str, dst: str):
@@ -57,7 +33,7 @@ def patch_editor_settings(path: Path, src: str, dst: str):
         path.write_text(text.replace(src, dst), encoding="utf-8")
 
 def main():
-    godot = Path(os.environ.get("GODOT", "")) if os.environ.get("GODOT") else find_godot()
+    godot = Path(os.environ["GODOT"]) if os.environ.get("GODOT") else find_godot()
     if not godot.exists():
         print(f"Godot not found at: {godot}", file=sys.stderr)
         sys.exit(1)
