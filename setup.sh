@@ -148,9 +148,22 @@ step "Compiling extension  (platform=$SCONS_PLATFORM  target=$TARGET)"
 scons platform="$SCONS_PLATFORM" target="$TARGET" \
   -j"$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)"
 
+# ── reload VS Code ───────────────────────────────────────────────────────────
+
+step "Reloading VS Code IntelliSense"
+if command -v code &>/dev/null; then
+  # --command sends workbench commands to the running VS Code instance
+  if code --command workbench.action.reloadWindow 2>/dev/null; then
+    ok "VS Code window reloaded"
+  else
+    echo "  ↳ Press Cmd+Shift+P → 'Reload Window' in VS Code"
+  fi
+else
+  echo "  ↳ 'code' not in PATH — press Cmd+Shift+P → 'Reload Window' in VS Code"
+fi
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✓ Built → bin/libperennial.$SCONS_PLATFORM.$TARGET.*"
-echo "  Reload VS Code window (Cmd+Shift+P → 'Reload Window')."
-echo "  Then open Godot 4.2 — GameWorld is ready to use."
+echo "  Open Godot 4.2 — GameWorld is ready to use."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
