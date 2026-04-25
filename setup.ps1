@@ -181,7 +181,10 @@ else {
 
 Step "godot-cpp submodule  (branch: 4.5)"
 
-$gitModules = Join-Path $RepoRoot ".gitmodules"
+$GodotCppDir    = Join-Path $ExtDir "godot-cpp"
+$GodotCppScons  = Join-Path $GodotCppDir "SConstruct"
+$gitModules     = Join-Path $RepoRoot ".gitmodules"
+
 $alreadyRegistered = (Test-Path $gitModules) -and (Select-String -Path $gitModules -Pattern "godot-cpp" -Quiet)
 
 if (-not $alreadyRegistered) {
@@ -192,6 +195,26 @@ if (-not $alreadyRegistered) {
 
 Write-Host "  -> Fetching / updating..."
 git -C $RepoRoot submodule update --init --recursive
+
+# If the directory exists but is empty (common on first clone), force a fresh clone
+if (-not (Test-Path $GodotCppScons)) {
+    Write-Host "  -> godot-cpp appears empty, forcing re-clone..."
+    Remove-Item $GodotCppDir -Recurse -Force -ErrorAction SilentlyContinue
+    git -C $RepoRoot submodule update --init --recursive --force
+}
+
+# If still missing, clone it directly as a fallback
+if (-not (Test-Path $GodotCppScons)) {
+    Write-Host "  -> Submodule update failed, cloning directly..."
+    git clone --branch 4.5 --depth 1 `
+        https://github.com/godotengine/godot-cpp `
+        $GodotCppDir
+}
+
+if (-not (Test-Path $GodotCppScons)) {
+    Die "godot-cpp/SConstruct still missing after all attempts. Check your network connection."
+}
+
 Ok "godot-cpp ready"
 
 # -- VS Code IntelliSense config ----------------------------------------------
