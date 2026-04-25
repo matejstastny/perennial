@@ -3,38 +3,3 @@
 
 ### Distribution ###
 dist/
-
-### GDExtension — compiled outputs ###
-bin/
-
-### GDExtension — SCons build system ###
-extension/.sconsign.dblite
-extension/.sconf_temp/
-extension/gen/
-
-### C/C++ object files and intermediates ###
-*.o
-*.obj
-*.os
-*.a
-*.lib
-*.pdb
-*.ilk
-*.exp
-
-### macOS shared libraries ###
-*.dylib
-*.framework
-
-### Linux shared libraries ###
-*.so
-*.so.*
-
-### Windows shared libraries ###
-*.dll
-
-### Compiler / IDE caches ###
-.cache/
-*.clangd/
-.clang-tidy-cache
-compile_commands.json
