@@ -40,12 +40,23 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 Ok "Python $((python --version 2>&1) -replace 'Python ','')"
 
 Step "Checking SCons"
-if (-not (Get-Command scons -ErrorAction SilentlyContinue)) {
+# Resolve scons by asking Python where it puts scripts -- avoids PATH issues
+# with packages installed mid-session (pip drops executables into Scripts\ but
+# that folder isn't on PATH until a new shell starts).
+$PyScripts = python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+$SconsExe  = Join-Path $PyScripts "scons.exe"
+
+if (-not (Test-Path $SconsExe)) {
     Write-Host "  -> Installing SCons..."
-    python -m pip install scons
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","User") + ";" + $env:PATH
+    python -m pip install --quiet scons
 }
-Ok "scons"
+
+if (-not (Test-Path $SconsExe)) {
+    Die "scons.exe not found at $SconsExe after install. Check your Python installation."
+}
+
+$SconsCmd = $SconsExe   # plain path, no extra quotes -- cmd /c handles quoting
+Ok "scons at $SconsExe"
 
 # -- Compiler detection & auto-install ----------------------------------------
 # Priority:
@@ -168,19 +179,42 @@ else {
 
 # -- godot-cpp submodule ------------------------------------------------------
 
-Step "godot-cpp submodule  (branch: 4.2)"
+Step "godot-cpp submodule  (branch: 4.5)"
 
-$gitModules = Join-Path $RepoRoot ".gitmodules"
+$GodotCppDir    = Join-Path $ExtDir "godot-cpp"
+$GodotCppScons  = Join-Path $GodotCppDir "SConstruct"
+$gitModules     = Join-Path $RepoRoot ".gitmodules"
+
 $alreadyRegistered = (Test-Path $gitModules) -and (Select-String -Path $gitModules -Pattern "godot-cpp" -Quiet)
 
 if (-not $alreadyRegistered) {
     Write-Host "  -> Registering submodule..."
-    git -C $RepoRoot submodule add -b 4.2 `
+    git -C $RepoRoot submodule add -b 4.5 `
         https://github.com/godotengine/godot-cpp extension/godot-cpp
 }
 
 Write-Host "  -> Fetching / updating..."
 git -C $RepoRoot submodule update --init --recursive
+
+# If the directory exists but is empty (common on first clone), force a fresh clone
+if (-not (Test-Path $GodotCppScons)) {
+    Write-Host "  -> godot-cpp appears empty, forcing re-clone..."
+    Remove-Item $GodotCppDir -Recurse -Force -ErrorAction SilentlyContinue
+    git -C $RepoRoot submodule update --init --recursive --force
+}
+
+# If still missing, clone it directly as a fallback
+if (-not (Test-Path $GodotCppScons)) {
+    Write-Host "  -> Submodule update failed, cloning directly..."
+    git clone --branch 4.5 --depth 1 `
+        https://github.com/godotengine/godot-cpp `
+        $GodotCppDir
+}
+
+if (-not (Test-Path $GodotCppScons)) {
+    Die "godot-cpp/SConstruct still missing after all attempts. Check your network connection."
+}
+
 Ok "godot-cpp ready"
 
 # -- VS Code IntelliSense config ----------------------------------------------
@@ -214,30 +248,50 @@ $propsPath = Join-Path $vscodeDir "c_cpp_properties.json"
 "@ | Set-Content -Path $propsPath -Encoding UTF8
 Ok ".vscode/c_cpp_properties.json written"
 
-# -- Helper: run scons --------------------------------------------------------
+# -- MSVC environment setup ---------------------------------------------------
+# Import MSVC env vars into the current PowerShell session so we can call
+# cl.exe / link.exe directly without wrapping every command in cmd /c.
+# This also means scons output goes straight to the terminal instead of being
+# swallowed by cmd /c.
 
-function Invoke-Scons($sconsArgs) {
-    if ($UseMingw) {
-        $cmd = "scons $sconsArgs use_mingw=yes"
-        Invoke-Expression $cmd
-    } else {
-        cmd /c "`"$DevShell`" && scons $sconsArgs"
+if (-not $UseMingw) {
+    Step "Setting up MSVC environment"
+    $tmp = [System.IO.Path]::GetTempFileName()
+    # Run VsDevCmd.bat and capture the resulting env vars via 'set'
+    cmd /c "`"$DevShell`" -no_logo && set" 2>$null | Set-Content $tmp -Encoding ASCII
+    foreach ($line in Get-Content $tmp) {
+        if ($line -match '^([^=]+)=(.*)$') {
+            [System.Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+        }
     }
-    if ($LASTEXITCODE -ne 0) { Die "scons failed: $sconsArgs" }
+    Remove-Item $tmp -ErrorAction SilentlyContinue
+    Ok "MSVC environment imported into session"
 }
 
-# -- Generate bindings --------------------------------------------------------
+# -- Build --------------------------------------------------------------------
+# One scons call from extension/ does everything:
+#   1. Runs godot-cpp/SConstruct  -> generates gen/include headers + builds godot-cpp lib
+#   2. Compiles our src/*.cpp     -> links into the final .dll
+#
+# '&' operator calls the exe directly -- output goes to the terminal, no
+# quoting issues, and $LASTEXITCODE is set correctly.
 
-Step "Generating C++ bindings"
+Step "Building extension  (platform=windows  target=$Target)"
 Set-Location $ExtDir
 
-Invoke-Scons "platform=windows target=$Target generate_bindings=yes --directory=`"$ExtDir\godot-cpp`""
-Ok "gen/include headers written"
+$jobs = [System.Environment]::ProcessorCount
 
-# -- Full build ---------------------------------------------------------------
+# Build argument list explicitly -- avoids PowerShell variable-expansion
+# quirks when a variable is glued to a flag like -j$jobs
+$sconsArgs = @(
+    "platform=windows",
+    "target=$Target",
+    "-j", "$jobs"
+)
+if ($UseMingw) { $sconsArgs += "use_mingw=yes" }
 
-Step "Compiling extension  (platform=windows  target=$Target)"
-Invoke-Scons "platform=windows target=$Target"
+& $SconsExe @sconsArgs
+if ($LASTEXITCODE -ne 0) { Die "Build failed -- see scons output above." }
 Ok "Built -> bin\libperennial.windows.$Target.x86_64.dll"
 
 # -- Reload VS Code -----------------------------------------------------------

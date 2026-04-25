@@ -90,12 +90,12 @@ esac
 
 # ── godot-cpp submodule ───────────────────────────────────────────────────────
 
-step "godot-cpp submodule  (branch: 4.2)"
+step "godot-cpp submodule  (branch: 4.5)"
 
 if ! grep -qs "godot-cpp" "$REPO_ROOT/.gitmodules" 2>/dev/null; then
   echo "  → Registering submodule..."
-  # note: the branch is '4.2', not 'godot-4.2'
-  git -C "$REPO_ROOT" submodule add -b 4.2 \
+  # note: the branch is '4.5', not 'godot-4.2'
+  git -C "$REPO_ROOT" submodule add -b 4.5 \
     https://github.com/godotengine/godot-cpp extension/godot-cpp
 fi
 
@@ -103,16 +103,6 @@ echo "  → Fetching content..."
 # --init handles first-time clones; --recursive pulls godot-cpp's own deps
 git -C "$REPO_ROOT" submodule update --init --recursive
 ok "godot-cpp ready"
-
-# ── generate bindings (creates gen/include — needed for VS Code) ──────────────
-
-step "Generating C++ bindings  (this is what creates the .hpp files VS Code needs)"
-cd "$EXT_DIR"
-# 'generate_bindings' is a scons alias that runs only the Python binding
-# generator without compiling any C++ — fast, no compiler required.
-scons platform="$SCONS_PLATFORM" target="$TARGET" generate_bindings=yes \
-  --directory="$GODOT_CPP_DIR"
-ok "gen/include headers written"
 
 # ── VS Code IntelliSense config ───────────────────────────────────────────────
 
@@ -142,9 +132,13 @@ cat >"$VSCODE_DIR/c_cpp_properties.json" <<JSON
 JSON
 ok ".vscode/c_cpp_properties.json written"
 
-# ── full build ────────────────────────────────────────────────────────────────
+# ── build ────────────────────────────────────────────────────────────────────
+# One scons call from extension/ does everything:
+#   1. Runs godot-cpp/SConstruct -> generates gen/include headers + godot-cpp lib
+#   2. Compiles src/*.cpp        -> links into the final .dylib/.so
 
-step "Compiling extension  (platform=$SCONS_PLATFORM  target=$TARGET)"
+step "Building extension  (platform=$SCONS_PLATFORM  target=$TARGET)"
+cd "$EXT_DIR"
 scons platform="$SCONS_PLATFORM" target="$TARGET" \
   -j"$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)"
 
