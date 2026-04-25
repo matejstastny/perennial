@@ -7,3 +7,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1958379132]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=690797617]
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1779559882]
+layout_mode = 2
+text = "Resume"
+
+[node name="QuitButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=768989982]
+layout_mode = 2
+text = "Quit"
