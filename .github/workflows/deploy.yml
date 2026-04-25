@@ -32,6 +32,12 @@ jobs:
           relative_project_path: "./"
           use_preset_export_path: true
 
+      - name: Patch for GitHub Pages COOP/COEP headers
+        run: |
+          curl -sL https://cdn.jsdelivr.net/npm/coi-serviceworker@0.1.7/coi-serviceworker.min.js \
+            -o dist/web/coi-serviceworker.js
+          sed -i 's|<head>|<head><script src="coi-serviceworker.js"></script>|' dist/web/index.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
