@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://hhlpawcc1h26"]
 
+[ext_resource type="Script" uid="uid://vq6mllh082ll" path="res://scripts/pause_menu.gd" id="1_n87rw"]
+
 [node name="PauseMenu" type="Control" unique_id=1461559384]
 layout_mode = 3
 anchors_preset = 15
@@ -7,11 +9,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_n87rw")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1958379132]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = -1
+offset_right = 70.0
+offset_bottom = 66.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=690797617]
 layout_mode = 2
@@ -23,3 +27,6 @@ text = "Resume"
 [node name="QuitButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=768989982]
 layout_mode = 2
 text = "Quit"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
