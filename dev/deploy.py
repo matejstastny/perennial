@@ -24,13 +24,12 @@ def find_godot():
         for base in candidates:
             if not base:
                 continue
-            for entry in base.glob("Godot*"):
-                exe = entry / "Godot.exe" if entry.is_dir() else entry
-                if exe.exists() and exe.suffix == ".exe":
-                    return exe
-                # Flat exe like Godot_v4.x.exe
-                if entry.suffix == ".exe" and "Godot" in entry.name:
-                    return entry
+            # Match Godot_v.../Godot_v....exe
+            for exe in base.glob("Godot_v*/*.exe"):
+                return exe
+            # Match a flat Godot*.exe directly in base
+            for exe in base.glob("Godot*.exe"):
+                return exe
         raise FileNotFoundError(
             "Godot not found. Add it to PATH or set GODOT env variable."
         )
