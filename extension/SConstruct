@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+import os
+
+# Pull in godot-cpp's own build environment
+env = SConscript("godot-cpp/SConstruct")
+
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+
+# Output goes to bin/ at the Godot project root
+if env["platform"] == "macos":
+    lib_name = "../bin/libperennial.{}.{}.framework/libperennial.{}.{}".format(
+        env["platform"], env["target"], env["platform"], env["target"]
+    )
+elif env["platform"] == "windows":
+    lib_name = "../bin/libperennial{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
+else:
+    lib_name = "../bin/libperennial{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
+
+library = env.SharedLibrary(lib_name, source=sources)
+Default(library)

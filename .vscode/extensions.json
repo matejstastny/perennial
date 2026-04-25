@@ -1,3 +1,7 @@
 {
-  "recommendations": ["alfish.godot-files", "geequlim.godot-tools"]
+  "recommendations": [
+    "alfish.godot-files",
+    "geequlim.godot-tools",
+    "ms-vscode.cpptools"
+  ]
 }

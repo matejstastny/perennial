@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "GDExtension",
+            "includePath": [
+                "${workspaceFolder}/extension/godot-cpp/include",
+                "${workspaceFolder}/extension/godot-cpp/gen/include",
+                "${workspaceFolder}/extension/godot-cpp/gdextension",
+                "${workspaceFolder}/extension/src"
+            ],
+            "defines": [],
+            "cppStandard": "c++17",
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}
