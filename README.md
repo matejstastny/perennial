@@ -16,17 +16,17 @@ That's it — no compilation, no toolchain.
 ### Deploy to web
 
 ```bash
-python deploy.py
+python tools/deploy.py
 ```
 
 Opens the game at `http://localhost:8060`. Auto-detects Godot on macOS and Windows. Override with:
 
 ```bash
 # macOS / Linux
-GODOT=/path/to/Godot python deploy.py
+GODOT=/path/to/Godot python tools/deploy.py
 
 # Windows
-set GODOT=C:\path\to\Godot.exe && python deploy.py
+set GODOT=C:\path\to\Godot.exe && python tools\deploy.py
 ```
 
 > The web export preset is already configured. You only need to download web export templates once: **Editor → Manage Export Templates → Download**.
@@ -35,15 +35,18 @@ set GODOT=C:\path\to\Godot.exe && python deploy.py
 
 ```
 scenes/
-  game.tscn           # Main scene — entry point
+  game.tscn             # Main scene — entry point
 scripts/
-  game_world.gd       # Orchestrates world gen, player spawn, camera
-  world_generator.gd  # Procedural terrain via two FastNoiseLite layers
-  tile_map_manager.gd # TileMapLayer: renders tiles, walkability queries
-  tile_registry.gd    # Tile metadata: walkable, speed modifier, color
-  player.gd           # CharacterBody2D with terrain-aware movement
-assets/               # Art assets (add sprites here)
-ui/                   # UI scenes and scripts
+  game_world.gd         # Orchestrates world gen, player spawn, camera
+  world_generator.gd    # Procedural terrain via two FastNoiseLite layers
+  tile_map_manager.gd   # TileMapLayer: renders tiles, walkability queries
+  tile_registry.gd      # Tile metadata: walkable, speed modifier, color
+  player.gd             # CharacterBody2D with terrain-aware movement
+assets/
+  sprout_lands/         # Sprout Lands sprite pack (characters, objects, tilesets)
+ui/                     # UI scenes and scripts
+tools/
+  deploy.py             # Export to web and serve locally
 ```
 
 ## How It Works
