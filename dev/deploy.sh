@@ -12,7 +12,7 @@ sed -i '' 's/use_external_editor = true/use_external_editor = false/' "$EDITOR_S
 trap 'sed -i "" "s/use_external_editor = false/use_external_editor = true/" "$EDITOR_SETTINGS"' EXIT
 
 echo "Exporting project..."
-"$GODOT" --headless --path "$PROJECT_DIR" --export-release "Web App" "$DIST_DIR/index.html"
+"$GODOT" --headless --path "$PROJECT_DIR" --export-release "web" "$DIST_DIR/index.html"
 
 # Restore immediately after export (trap also covers crash/abort)
 sed -i '' 's/use_external_editor = false/use_external_editor = true/' "$EDITOR_SETTINGS"
