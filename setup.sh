@@ -92,16 +92,31 @@ esac
 
 step "godot-cpp submodule  (branch: 4.5)"
 
-if ! grep -qs "godot-cpp" "$REPO_ROOT/.gitmodules" 2>/dev/null; then
-  echo "  → Registering submodule..."
-  # note: the branch is '4.5', not 'godot-4.2'
-  git -C "$REPO_ROOT" submodule add -b 4.5 \
-    https://github.com/godotengine/godot-cpp extension/godot-cpp
+GODOT_CPP_DIR="$EXT_DIR/godot-cpp"
+GODOT_CPP_SCONS="$GODOT_CPP_DIR/SConstruct"
+
+echo "  → Fetching / updating..."
+git -C "$REPO_ROOT" submodule update --init --recursive
+
+# If the directory exists but SConstruct is missing the clone didn't finish
+if [ ! -f "$GODOT_CPP_SCONS" ]; then
+  echo "  → godot-cpp appears empty, forcing re-clone..."
+  rm -rf "$GODOT_CPP_DIR"
+  git -C "$REPO_ROOT" submodule update --init --recursive --force
 fi
 
-echo "  → Fetching content..."
-# --init handles first-time clones; --recursive pulls godot-cpp's own deps
-git -C "$REPO_ROOT" submodule update --init --recursive
+# Last resort: clone directly, bypassing the submodule mechanism
+if [ ! -f "$GODOT_CPP_SCONS" ]; then
+  echo "  → Submodule update failed, cloning directly..."
+  git clone --branch 4.5 --depth 1 \
+    https://github.com/godotengine/godot-cpp \
+    "$GODOT_CPP_DIR"
+fi
+
+if [ ! -f "$GODOT_CPP_SCONS" ]; then
+  die "godot-cpp/SConstruct still missing after all attempts. Check your network connection."
+fi
+
 ok "godot-cpp ready"
 
 # ── VS Code IntelliSense config ───────────────────────────────────────────────
