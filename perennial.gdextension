@@ -1,6 +1,6 @@
 [configuration]
 entry_symbol = "perennial_library_init"
-compatibility_minimum = "4.2"
+compatibility_minimum = "4.5"
 
 [libraries]
 macos.debug   = "res://bin/libperennial.macos.template_debug.framework"

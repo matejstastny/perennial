@@ -90,12 +90,12 @@ esac
 
 # ── godot-cpp submodule ───────────────────────────────────────────────────────
 
-step "godot-cpp submodule  (branch: 4.2)"
+step "godot-cpp submodule  (branch: 4.5)"
 
 if ! grep -qs "godot-cpp" "$REPO_ROOT/.gitmodules" 2>/dev/null; then
   echo "  → Registering submodule..."
-  # note: the branch is '4.2', not 'godot-4.2'
-  git -C "$REPO_ROOT" submodule add -b 4.2 \
+  # note: the branch is '4.5', not 'godot-4.2'
+  git -C "$REPO_ROOT" submodule add -b 4.5 \
     https://github.com/godotengine/godot-cpp extension/godot-cpp
 fi
 

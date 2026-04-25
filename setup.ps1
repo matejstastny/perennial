@@ -40,12 +40,13 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 Ok "Python $((python --version 2>&1) -replace 'Python ','')"
 
 Step "Checking SCons"
-if (-not (Get-Command scons -ErrorAction SilentlyContinue)) {
+if (-not (python -m scons --version 2>$null)) {
     Write-Host "  -> Installing SCons..."
     python -m pip install scons
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","User") + ";" + $env:PATH
 }
-Ok "scons"
+# Use 'python -m scons' throughout to avoid PATH issues with newly installed packages
+$SconsCmd = "python -m scons"
+Ok "scons (via python -m scons)"
 
 # -- Compiler detection & auto-install ----------------------------------------
 # Priority:
@@ -168,14 +169,14 @@ else {
 
 # -- godot-cpp submodule ------------------------------------------------------
 
-Step "godot-cpp submodule  (branch: 4.2)"
+Step "godot-cpp submodule  (branch: 4.5)"
 
 $gitModules = Join-Path $RepoRoot ".gitmodules"
 $alreadyRegistered = (Test-Path $gitModules) -and (Select-String -Path $gitModules -Pattern "godot-cpp" -Quiet)
 
 if (-not $alreadyRegistered) {
     Write-Host "  -> Registering submodule..."
-    git -C $RepoRoot submodule add -b 4.2 `
+    git -C $RepoRoot submodule add -b 4.5 `
         https://github.com/godotengine/godot-cpp extension/godot-cpp
 }
 
@@ -218,10 +219,10 @@ Ok ".vscode/c_cpp_properties.json written"
 
 function Invoke-Scons($sconsArgs) {
     if ($UseMingw) {
-        $cmd = "scons $sconsArgs use_mingw=yes"
-        Invoke-Expression $cmd
+        # python -m scons avoids relying on scons being on PATH
+        Invoke-Expression "$SconsCmd $sconsArgs use_mingw=yes"
     } else {
-        cmd /c "`"$DevShell`" && scons $sconsArgs"
+        cmd /c "`"$DevShell`" && $SconsCmd $sconsArgs"
     }
     if ($LASTEXITCODE -ne 0) { Die "scons failed: $sconsArgs" }
 }
