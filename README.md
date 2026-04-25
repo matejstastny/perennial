@@ -72,8 +72,10 @@ World generation uses two Simplex noise layers (elevation + moisture) to classif
 
 **Add a new scene:** create it under `scenes/`, attach a script from `scripts/`, and instantiate it from `game_world.gd` or the scene tree.
 
-## Assets
+# Assets:
 
+- [itch.io game assets free tag pixel art](https://itch.io/game-assets/free/tag-pixel-art)
 - [Sprout Lands Asset Pack](https://cupnooble.itch.io/sprout-lands-asset-pack)
 - [Sprout Lands UI Pack](https://cupnooble.itch.io/sprout-lands-ui-pack)
+- [Pixel Planet Generator](https://deep-fold.itch.io/pixel-planet-generator)
 - [Basic Pixel Health Bar and Scroll Bar](https://bdragon1727.itch.io/basic-pixel-health-bar-and-scroll-bar)
