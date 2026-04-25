@@ -238,17 +238,13 @@ function Invoke-Scons($sconsArgs) {
     if ($LASTEXITCODE -ne 0) { Die "scons failed: $sconsArgs" }
 }
 
-# -- Generate bindings --------------------------------------------------------
+# -- Build --------------------------------------------------------------------
+# One scons call from extension/ does everything:
+#   1. Runs godot-cpp/SConstruct  -> generates gen/include headers + builds godot-cpp lib
+#   2. Compiles our src/*.cpp     -> links into the final .dll
 
-Step "Generating C++ bindings"
+Step "Building extension  (platform=windows  target=$Target)"
 Set-Location $ExtDir
-
-Invoke-Scons "platform=windows target=$Target generate_bindings=yes --directory=`"$ExtDir\godot-cpp`""
-Ok "gen/include headers written"
-
-# -- Full build ---------------------------------------------------------------
-
-Step "Compiling extension  (platform=windows  target=$Target)"
 Invoke-Scons "platform=windows target=$Target"
 Ok "Built -> bin\libperennial.windows.$Target.x86_64.dll"
 
