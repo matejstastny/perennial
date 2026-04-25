@@ -12,7 +12,7 @@ if platform.system() == "Windows":
     sys.exit(1)
 
 PORT = 8060
-PROJECT_DIR = Path(__file__).parent.parent.resolve()
+PROJECT_DIR = Path(__file__).resolve().parent
 DIST_DIR = PROJECT_DIR / "dist"
 
 def find_godot():
