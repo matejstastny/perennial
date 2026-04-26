@@ -76,6 +76,7 @@ def main() -> None:
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
     DIST_DIR.mkdir(parents=True, exist_ok=True)
+    (DIST_DIR / ".gdignore").touch()
 
     try:
         print("Exporting project...")
