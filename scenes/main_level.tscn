@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://cev10ybq1k8o5" path="res://assets/sprout_lands/tilesets/Grass.png" id="1_v3uhd"]
 [ext_resource type="Texture2D" uid="uid://crssywa1m4w0h" path="res://assets/sprout_lands/tilesets/Hills.png" id="3_6we3w"]
 [ext_resource type="PackedScene" uid="uid://hhlpawcc1h26" path="res://scenes/pause_menu.tscn" id="5_bq26l"]
+[ext_resource type="Script" uid="uid://cdd2k25b0igbv" path="res://scripts/camera.gd" id="6_cam01"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6we3w"]
 texture = ExtResource("1_ufxs0")
@@ -1178,3 +1179,11 @@ tile_set = SubResource("TileSet_6we3w")
 [node name="PauseMenu" parent="." unique_id=1461559384 node_paths=PackedStringArray("main") instance=ExtResource("5_bq26l")]
 visible = false
 main = NodePath("..")
+
+[node name="Camera" type="Camera2D" parent="." unique_id=1748834403]
+position = Vector2(264, 226)
+limit_left = 0
+limit_top = 0
+limit_right = 1680
+limit_bottom = 1070
+script = ExtResource("6_cam01")
